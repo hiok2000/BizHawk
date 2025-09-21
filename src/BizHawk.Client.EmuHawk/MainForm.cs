@@ -68,9 +68,30 @@ namespace BizHawk.Client.EmuHawk
 			ToolTipText = "Rewinder is capturing states",
 		};
 
+		[System.Runtime.InteropServices.DllImport("dwmapi.dll", PreserveSig = false)]
+		private static extern int DwmGetColorizationColor(out int color, out bool opaque);
+
+		private const int WM_DWMCOLORIZATIONCOLORCHANGED = 0x0320;
+
+		private void UpdateThemeColors()
+		{
+			_ = DwmGetColorizationColor(out int color, out bool opaque);
+			Color themeColor = Color.FromArgb(
+				(color >> 16) & 0xFF,
+				(color >> 8) & 0xFF,
+				color & 0xFF);
+
+			this.BackColor = themeColor;
+			foreach (Control ctrl in this.Controls)
+			{
+				ctrl.BackColor = themeColor;
+			}
+		}
+
 		private void MainForm_Load(object sender, EventArgs e)
 		{
 			UpdateWindowTitle();
+			UpdateThemeColors();
 
 			Slot1StatusButton.Tag = SelectSlot1MenuItem.Tag = 1;
 			Slot2StatusButton.Tag = SelectSlot2MenuItem.Tag = 2;
@@ -4955,3 +4976,4 @@ namespace BizHawk.Client.EmuHawk
 		}
 	}
 }
+
